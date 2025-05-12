@@ -1,0 +1,40 @@
+import streamlit as st  # Streamlit kütüphanesini import ediyoruz
+import joblib  # Modelimizi yüklemek için joblib'i kullanıyoruz
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder  # Cinsiyeti sayısal hale getirmek için
+
+# Modeli yükle (modelinizi kaydettikten sonra burada doğru yolu belirtmelisiniz)
+model = joblib.load('depresyon_modeli.pkl')  # Burada model dosyasının doğru yolunu vermelisiniz
+
+# Başlık
+st.title("Depresyon Tahmin Modeli")
+
+# Kullanıcıdan veri alıyoruz
+st.header("Kişisel Bilgilerinizi Girin")
+
+# Yaş inputu
+age = st.slider("Yaş", 18, 100, 25)  # Kullanıcıdan yaş bilgisi alıyoruz (18 ile 100 arasında)
+
+# Cinsiyet inputu
+gender = st.selectbox("Cinsiyet", ["Erkek", "Kadın"])  # Kullanıcıdan cinsiyet bilgisi alıyoruz
+
+# Kullanıcıdan alınan veriyi hazırlama
+label_encoder = LabelEncoder()  # Cinsiyet bilgisini sayısal formata dönüştürmek için
+gender_encoded = label_encoder.fit_transform([gender])[0]  # Cinsiyet bilgisini sayıya dönüştürme
+
+# Kullanıcıdan alınan veriyi DataFrame'e dönüştürme
+input_data = pd.DataFrame([[age, gender_encoded]], columns=["Yaş", "Cinsiyet"])
+
+# Tahmin butonu
+if st.button("Tahmin Et"):
+    # Modeli kullanarak tahmin yap
+    prediction = model.predict(input_data)
+    
+    # Sonucu yazdır
+    if prediction[0] == 0:
+        st.success("Depresyon Riski Yok")  # Model 0 dönerse, depresyon riski yok deriz
+    else:
+        st.warning("Depresyon Riski Var")  # Model 1 dönerse, depresyon riski var deriz
+
+    # Ekstra sonuçlar
+    st.write("Verilen verilerle yapılan tahmin: ", prediction[0])
